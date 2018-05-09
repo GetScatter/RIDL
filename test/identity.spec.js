@@ -15,6 +15,8 @@ const _self = () => eos.contract('ridl');
 
 describe('IdentityService', () => {
 
+    let identified = null;
+
     const reservations = [
         {username:"hello",key:publicKey},
         {username:"helloa",key:publicKey}
@@ -54,7 +56,6 @@ describe('IdentityService', () => {
             const identity = await ridl.identity.claim('non-existing',
                 'SIG_K1_Jw2eBhZppnho6rKjN9qmuYrgoChn7H4gC9sQvxK3x7v2MWcUWXFTDzwkN7UwSaSrXM4GvgB46XRzZrhCsFWcVx4A11yS7m',
                 publicKey).catch(()=>null);
-            console.log('identity',identity);
             assert(!identity, "Identity cam back as non null");
             done();
         })
@@ -76,9 +77,10 @@ describe('IdentityService', () => {
     it('should be able to identify a non-registered identity', done => {
         new Promise(async() => {
             const username = await ridl.identity.randomName();
-            const identity = await ridl.identity.identify(username, publicKey);
-            assert(identity, "Identity is still unidentified");
-            assert(!identity.registered, "Identity is registered");
+            identified = await ridl.identity.identify(username, publicKey);
+            assert(identified, "Identity is still unidentified");
+            assert(!identified.registered, "Identity is registered");
+            identified.username = username;
             done();
         })
     });
@@ -87,6 +89,28 @@ describe('IdentityService', () => {
         new Promise(async() => {
             assert(!await ridl.identity.identify('xyz', publicKey), "Identity was identified");
             assert(!await ridl.identity.identify('RandomAbercad', publicKey), "Identity was identified");
+            done();
+        })
+    });
+
+    it('should NOT be able to release an identity with the wrong key', done => {
+        new Promise(async() => {
+            const username = identified.username;
+            const hash = await ridl.identity.getHash(reservations[0].username);
+            const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
+            assert(!await ridl.identity.release(username, signedHash), "Identity was released");
+            assert(await ridl.identity.get(username), "Couldn't find non released identity");
+            done();
+        })
+    });
+
+    it('should be able to release an identity', done => {
+        new Promise(async() => {
+            const username = identified.username;
+            const hash = await ridl.identity.getHash(username);
+            const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
+            assert(await ridl.identity.release(username, signedHash), "Identity was not released");
+            assert(!await ridl.identity.get(username), "Found released identity");
             done();
         })
     });

@@ -1,10 +1,11 @@
 {
   "name": "ridl",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "dist/ridl.js",
   "scripts": {
     "build": "./node_modules/.bin/babel  ./src --experimental --source-maps-inline -d ./dist",
+    "touch": "./node_modules/.bin/babel  ./src --experimental --source-maps-inline -d ./dist && npm publish",
     "watch": "./node_modules/.bin/babel  ./src --watch --experimental --source-maps-inline -d ./dist",
     "testfile": "mocha --require babel-core/register --exit --timeout 1000000",
     "test": "npm run testfile \"test/**/*.spec.js\" --timeout 1000000"

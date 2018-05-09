@@ -56,11 +56,17 @@ export default class IdentityService {
         }).catch(err => null);
     }
 
-    async claim(name, signedSha256FromName, publicKey){
-        const claim = new ClaimReservation(name, signedSha256FromName, publicKey);
+    async claim(name, signedHash, publicKey){
+        const claim = new ClaimReservation(name, signedHash, publicKey);
         return (await eos.write()).claim({claim, wtv:''}, eos.authorization).then(() => {
             return this.get(name);
         }).catch(err => null);
+    }
+
+    async release(name, signedHash){
+        return (await eos.write()).release(name, signedHash, eos.authorization)
+            .then(() => true)
+            .catch(err => false);
     }
 
     async getHash(name){
