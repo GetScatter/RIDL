@@ -1,4 +1,4 @@
-import RIDL from '../src/ridl'
+import ridl from '../src/ridl'
 
 import Eos from 'eosjs';
 import ecc from 'eosjs-ecc';
@@ -12,7 +12,6 @@ const signProvider = signargs => signargs.sign(signargs.buf, privateKey);
 const selfAuth = {authorization:['ridl']};
 const eos = Eos.Localnet({httpEndpoint:'http://192.168.56.101:8888', signProvider});
 const _self = () => eos.contract('ridl');
-const ridl = new RIDL();
 
 describe('IdentityService', () => {
 

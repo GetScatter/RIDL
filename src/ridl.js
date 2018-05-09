@@ -4,7 +4,7 @@ import IdentityService from './services/identity';
 import ReputationService from './services/reputation';
 import SecurityService from './services/security';
 
-export default class RIDL {
+class RIDL {
 
     constructor(){
         this.identity =     new IdentityService();
@@ -12,10 +12,9 @@ export default class RIDL {
         this.security =     new SecurityService();
     }
 
-    async stringToSha256(string){
-        return ecc.sha256(string);
-    }
 }
+
+export default new RIDL();
 
 
 
