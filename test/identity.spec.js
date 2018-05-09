@@ -77,8 +77,16 @@ describe('IdentityService', () => {
         new Promise(async() => {
             const username = await ridl.identity.randomName();
             const identity = await ridl.identity.identify(username, publicKey);
-            assert(identity, "Identity is still unclaimed");
+            assert(identity, "Identity is still unidentified");
             assert(!identity.registered, "Identity is registered");
+            done();
+        })
+    });
+
+    it('should NOT be able to identify a non-registered identity with a bad name', done => {
+        new Promise(async() => {
+            assert(!await ridl.identity.identify('xyz', publicKey), "Identity was identified");
+            assert(!await ridl.identity.identify('RandomAbercad', publicKey), "Identity was identified");
             done();
         })
     });
