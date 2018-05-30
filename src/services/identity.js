@@ -6,6 +6,8 @@ import murmur from 'murmurhash';
 
 const reservations = 'reservations';
 const identities = 'identities';
+const legalCharacters = '.12345abcdefghijklmnopqrstuvwxyz';
+const maxAccountNameSize = 13;
 
 const getIdentity = async (table, name) => {
     return await eos.read({
@@ -26,8 +28,8 @@ const randomSuffix = () => {
 };
 
 const generateRandomName = () => {
-    const name = `Random${randomSuffix()}`;
-    if(name.length > 20) return generateRandomName();
+    const name = '';
+    for(let i=0; i< maxAccountNameSize; i++) name += possible.charAt(Math.floor(Math.random() * possible.length));
     return name;
 };
 
