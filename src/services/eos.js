@@ -1,23 +1,64 @@
 import Eos from 'eosjs';
+import Network from '../models/Network';
 
-const getNetwork = () => {
-    //TODO: decentralize
-    return 'http://192.168.56.101:8888';
+const code = 'ridlridlridl';
+const tokenCode = 'ridlridlcoin';
+
+export let writer = null;
+export let reader = null;
+export let contract = null;
+export let token = null;
+export let options = {};
+export let account = null;
+
+/***
+ * Can be initialized as a reader only.
+ * @param network
+ * @param _account
+ * @param signProvider
+ * @returns {Promise.<boolean>}
+ */
+export const init = async (network, _account = null, signProvider = null) => {
+    network = Network.fromJson(network);
+    if(!!_account) account = _account;
+
+    reader = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId});
+
+    if(signProvider) {
+        writer = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
+        contract = await writer.contract(code);
+        token = await writer.contract(tokenCode);
+    } else {
+        writer = null;
+        contract = null;
+        token = null;
+    }
+
+    const baseOptions = {
+        logger: {
+            log: null,//console.log,
+            error: null,//console.error
+        }
+    }
+
+    options = Object.assign(baseOptions, !!_account ? { authorization:[`${_account.name}@${_account.authority}`] } : {});
+    return true;
 };
 
-const code = 'ridl';
-
-export const authorization = {authorization:['ridlpublic']};
-const signProvider = signargs => {
-    // Publicly visible stake only account
-    return signargs.sign(signargs.buf, '5K92JPHddxyGVFx81jx7rgvjNZPxQzQz33ZqYzFwjfnPX8bbdKz');
+/***
+ * Checks the connection to the network.
+ * @returns {Promise.<*>}
+ */
+export const canConnect = async () => {
+    const timeout = new Promise((r) => {setTimeout(() => r(false), 1500)});
+    const contract = reader.getInfo({}).then(() => true).catch(() => false);
+    return Promise.race([timeout, contract]);
 };
 
-const getEos = () => Eos.Localnet({httpEndpoint:getNetwork(), signProvider});
-export const write = async () => getEos().contract(code);
-export const read = async ({table, index, limit = 10, model = null, scope = 'ridl', firstOnly = false, rowsOnly = false}) => {
+
+export const read = async ({table, index, limit = 10, model = null, scope = code, firstOnly = false, rowsOnly = false}) => {
     const bounds = index ? {lower_bound:index, upper_bound:index+limit} : {};
-    return await getEos().getTableRows(Object.assign({ json:true, code, scope, table, limit }, bounds)).then(result => {
+    return await reader.getTableRows(Object.assign({ json:true, code, scope, table, limit }, bounds)).then(result => {
         if(model) result = format(result, model);
         if(firstOnly) return getFirstOnly(result);
         if(rowsOnly) return getRowsOnly(result);

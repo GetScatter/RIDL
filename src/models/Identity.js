@@ -4,7 +4,6 @@ export default class Identity {
         this.username = username;
         this.key = publicKey;
         this.hash = '';
-        this.registered = 0;
     }
 
     static fromJson(json){

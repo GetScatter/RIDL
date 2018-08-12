@@ -1,116 +1,175 @@
 import ridl from '../src/ridl'
 
-import Eos from 'eosjs';
 import ecc from 'eosjs-ecc';
+import * as eos from '../src/services/eos'
 import { assert } from 'chai';
 import 'mocha';
 
-const privateKey = '5KjbZQLH3EAfgXF3jejYM2WZjzJCUQH7NEkT1mVcBy2xoFdSWro';
-const publicKey = 'EOS6TqXzpicna18dyRN3YoeLuviK3GJ3Geiid7TCfHCSZhXE49C44';
+const host = `192.168.1.6`;
+const chainId = 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f';
+const code = 'ridlridlridl';
+
+const privateKey = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
+const publicKey = 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV';
+const account = {name:'testacc', authority:'active'};
+const account2 = {name:'ridlridlcoin', authority:'active'};
 
 const signProvider = signargs => signargs.sign(signargs.buf, privateKey);
-const selfAuth = {authorization:['ridl']};
-const eos = Eos.Localnet({httpEndpoint:'http://192.168.56.101:8888', signProvider});
-const _self = () => eos.contract('ridl');
+
+const contractAuth = () =>
+    ridl.init({protocol:'http', host, port:8888, chainId}, {name:'ridlridlridl', authority:'active'}, signProvider);
+
+const userAuth = (other = false) =>
+    ridl.init({protocol:'http', host, port:8888, chainId}, !other ? account : account2, signProvider);
+
 
 describe('IdentityService', () => {
 
     let identified = null;
 
-    const reservations = [
-        {username:"hello",key:publicKey},
-        {username:"helloa",key:publicKey}
-    ];
+    const reservation = {username:"hello",key:publicKey};
 
-    it('should clean up the contract', done => {
+    it('should clean the contract', done => {
         new Promise(async() => {
-            const self = await _self();
-            await self.clean('', selfAuth);
-            done();
-        });
-    })
-
-    it('should insert some claimable reservations', done => {
-        new Promise(async() => {
-            const self = await _self();
-            await self.seed({pairs:reservations}, selfAuth);
-            reservations.map(async reservation => {
-                assert(await ridl.identity.reservation(reservation), "Could not find reservation");
-            });
-
-            assert(!await ridl.identity.get(reservations[0]), "Found identity as reservation");
+            await contractAuth();
+            await eos.contract.clean({}, eos.options);
             done();
         });
     });
 
-    it('should be able to get a hash for a reservation', done => {
+    it('should insert some claimable reservations', done => {
         new Promise(async() => {
-            const hash = await ridl.identity.getHash(reservations[0].username);
+            await contractAuth();
+            await eos.contract.seed(reservation.username, reservation.key, eos.options);
+            const identity = await ridl.identity.get(reservation.username);
+            assert(identity, "Could not find seeded identity");
+            assert(identity.account === code, "Identity is already claimed");
+            done();
+        });
+    });
+
+    it('should be able to get a hash', done => {
+        new Promise(async() => {
+            await contractAuth();
+            const hash = await ridl.identity.getHash(reservation.username);
             assert(hash, "Could not get hash");
             done();
         });
     });
 
-    it('should NOT be able to claim an identity that does not have a reservation', done => {
-        new Promise(async() => {
-            const identity = await ridl.identity.claim('non-existing',
-                'SIG_K1_Jw2eBhZppnho6rKjN9qmuYrgoChn7H4gC9sQvxK3x7v2MWcUWXFTDzwkN7UwSaSrXM4GvgB46XRzZrhCsFWcVx4A11yS7m',
-                publicKey).catch(()=>null);
-            assert(!identity, "Identity cam back as non null");
-            done();
-        })
-    });
-
     it('should be able to claim an identity from a reservation', done => {
         new Promise(async() => {
-            const reservation = reservations[0];
-            const username = reservation.username;
-            const hash = await ridl.identity.getHash(username);
+            await userAuth();
+            const hash = await ridl.identity.getHash(reservation.username);
             const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
-            const identity = await ridl.identity.claim(username, signedHash, reservation.key);
-            assert(identity, "Identity is still unclaimed");
-            assert(identity.registered, "Identity is not registered");
+            const identity = await ridl.identity.claim(reservation.username, publicKey, signedHash);
+            assert(identity, "Identity not retrieved");
+            assert(identity.account === account.name, "Identity is not registered to the new account");
             done();
         })
     });
 
-    it('should be able to identify a non-registered identity', done => {
+    it('should be able to re-key an identity', done => {
         new Promise(async() => {
-            const username = await ridl.identity.randomName();
-            identified = await ridl.identity.identify(username, publicKey);
-            assert(identified, "Identity is still unidentified");
-            assert(!identified.registered, "Identity is registered");
-            identified.username = username;
+            await userAuth();
+
+            const rekeyed = await ridl.identity.rekey(reservation.username, 'EOS5AwwyqQTsrMTkBbGxkbJz9vMugi7d3zHBRiGvbWv1eU4dGYc4v');
+            assert(rekeyed, "Identity was not retrieved rekey");
+            assert(rekeyed.key === 'EOS5AwwyqQTsrMTkBbGxkbJz9vMugi7d3zHBRiGvbWv1eU4dGYc4v', "Identity was not rekeyed");
+
+            // Resetting to key with configured private
+            await ridl.identity.rekey(reservation.username, publicKey);
+
             done();
         })
     });
 
-    it('should NOT be able to identify a non-registered identity with a bad name', done => {
+    it('should be able to setaccount on an identity using an identity signature only', done => {
         new Promise(async() => {
-            assert(!await ridl.identity.identify('xyz', publicKey), "Identity was identified");
-            assert(!await ridl.identity.identify('RandomAbercad', publicKey), "Identity was identified");
-            done();
-        })
-    });
-
-    it('should NOT be able to release an identity with the wrong key', done => {
-        new Promise(async() => {
-            const username = identified.username;
-            const hash = await ridl.identity.getHash(reservations[0].username);
+            await userAuth();
+            const hash = await ridl.identity.getHash(reservation.username);
             const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
-            assert(!await ridl.identity.release(username, signedHash), "Identity was released");
-            assert(await ridl.identity.get(username), "Couldn't find non released identity");
+            const setaccount = await ridl.identity.setaccount(reservation.username, 'eosio', signedHash);
+            assert(setaccount, "Identity not retrieved setaccount");
+            assert(setaccount.account === 'eosio', "Identity is not registered to the new account");
+            await ridl.identity.setaccount(reservation.username, account.name, signedHash);
             done();
         })
     });
 
     it('should be able to release an identity', done => {
         new Promise(async() => {
-            const username = identified.username;
-            const hash = await ridl.identity.getHash(username);
+            await userAuth();
+            const hash = await ridl.identity.getHash(reservation.username);
             const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
-            assert(await ridl.identity.release(username, signedHash), "Identity was not released");
-            assert(!await ridl.identity.get(username), "Found released identity");
+            assert(await ridl.identity.release(reservation.username, signedHash), "Identity was not released");
+            assert(!await ridl.identity.get(reservation.username), "Found released identity");
+            done();
+        })
+    });
+
+    it('should be able to pay for an identity and identify in a single batch transaction', done => {
+        new Promise(async() => {
+            await userAuth();
+            const identified = await ridl.identity.payAndIdentify(reservation.username, publicKey);
+            const identity = await ridl.identity.get(reservation.username);
+            assert(identity, "Did not create identity");
+            assert(identity.account === account.name, "Incorrectly identified");
+            assert(identity.tokens === '20.0000 RIDL', "Bad initial tokens");
+
+            done();
+        })
+    });
+
+    it('should be able to load tokens into an identity', done => {
+        new Promise(async() => {
+            await userAuth();
+            const identity = await ridl.identity.loadTokens(reservation.username, 50);
+            assert(identity.tokens === '70.0000 RIDL', "Incorrect tokens 1");
+            done();
+        })
+    });
+
+    it('should be able to load more tokens into an identity than it can hold and be refunded the overflow', done => {
+        new Promise(async() => {
+            await userAuth();
+            const identity = await ridl.identity.loadTokens(reservation.username, 160);
+            assert(identity.tokens === '100.0000 RIDL', "Incorrect tokens 1");
+            done();
+        })
+    });
+
+    it('should release the manually registered identity', done => {
+        new Promise(async() => {
+            const hash = await ridl.identity.getHash(reservation.username);
+            const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
+            assert(await ridl.identity.release(reservation.username, signedHash), "Identity was not released");
+            done();
+        })
+    })
+
+    it('should be able to pay for an identity for someone else without claiming it', done => {
+        new Promise(async() => {
+            await userAuth();
+            const paid = await ridl.identity.payForIdentity(reservation.username, account2.name);
+
+            done();
+        })
+    });
+
+    it('should be able to claim a gifted identity', done => {
+        new Promise(async() => {
+            await userAuth(true);
+            const claimed = await ridl.identity.claimPaidIdentity(reservation.username, publicKey);
+
+            const identity = await ridl.identity.get(reservation.username);
+            assert(identity, "Did not create identity");
+            assert(identity.account === account2.name, "Incorrectly identified");
+
+            const hash = await ridl.identity.getHash(reservation.username);
+            const signedHash = ecc.Signature.signHash(hash, privateKey).toString();
+            assert(await ridl.identity.release(reservation.username, signedHash), "Identity was not released");
+
             done();
         })
     });
