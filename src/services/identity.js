@@ -72,7 +72,7 @@ export default class IdentityService {
         if(amount <= 0) throw new Error("Amount must be greater than 0");
 
         return eos.token.transfer(eos.account.name, 'ridlridlridl', `${amount} RIDL`, `${eos.account.name} ${username}`, eos.options)
-            .then(() => this.get(username))
+            .then(res => res)
             .catch(err => false);
     }
 

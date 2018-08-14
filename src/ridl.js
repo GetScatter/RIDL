@@ -28,6 +28,10 @@ class RIDL {
         return eos.init(network, account, signProvider);
     }
 
+    canConnect(){
+        return eos.canConnect();
+    }
+
 }
 
 export default new RIDL();

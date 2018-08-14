@@ -10,6 +10,7 @@ export let contract = null;
 export let token = null;
 export let options = {};
 export let account = null;
+let net = null;
 
 /***
  * Can be initialized as a reader only.
@@ -20,7 +21,16 @@ export let account = null;
  */
 export const init = async (network, _account = null, signProvider = null) => {
     network = Network.fromJson(network);
+    net = network;
     if(!!_account) account = _account;
+
+    if(!await canConnect()) {
+        writer = null;
+        contract = null;
+        token = null;
+        options = {};
+        return false;
+    }
 
     reader = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId});
 
@@ -51,8 +61,8 @@ export const init = async (network, _account = null, signProvider = null) => {
  */
 export const canConnect = async () => {
     const timeout = new Promise((r) => {setTimeout(() => r(false), 1500)});
-    const contract = reader.getInfo({}).then(() => true).catch(() => false);
-    return Promise.race([timeout, contract]);
+    const tester = fetch(`${net.fullhost()}/v1/chain/get_info`).then(() => true).catch(() => false);
+    return Promise.race([timeout, tester]);
 };
 
 
