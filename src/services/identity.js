@@ -18,7 +18,14 @@ const getIdentity = async (username) => {
 
 export default class IdentityService {
 
-    constructor(){}
+    constructor(){
+    	this.paymentSymbol = 'EOS';
+	}
+
+	setSymbol(symbol){
+    	this.paymentSymbol = symbol;
+	}
+
 
     validName(name){
         return /^[a-zA-Z0-9_-]{3,20}$/.test(name);
@@ -30,39 +37,37 @@ export default class IdentityService {
 
     async payAndIdentify(username, key){
         return eos.writer.transaction(['eosio.token', 'ridlridlridl'], contracts => {
-            contracts.eosio_token.transfer(eos.account.name, 'ridlridlridl', '1.0000 EOS', `${eos.account.name} ${username}`, eos.options);
-            contracts.ridlridlridl.identify(username, key, eos.account.name, eos.options);
+            contracts.eosio_token.transfer(eos.account.name, 'ridlridlridl', `1.0000 ${this.paymentSymbol}`, '', eos.options);
+            contracts.ridlridlridl.identify(eos.account.name, username, key, eos.options);
         })
     }
 
-    async payForIdentity(username, toAccount){
-        return eos.writer.transfer(eos.account.name, 'ridlridlridl', '1.0000 EOS', `${toAccount} ${username}`, eos.options);
-    }
-
-    async claimPaidIdentity(username, key){
-        return eos.contract.identify(username, key, eos.account.name, eos.options);
-    }
-
     async claim(username, key, signature){
-        return eos.contract.claim(username, key, signature, eos.account.name, eos.options)
+        return eos.contract.claim(eos.account.name, username, key, signature, eos.options)
             .then(() => this.get(username))
-            .catch(err => null);
+            .catch(err => console.error(err));
     }
 
     async rekey(username, key){
-        return eos.contract.rekey(fingerprinted(username), eos.account.name, key, eos.options)
+        return eos.contract.rekey(username, key, eos.options)
             .then(() => this.get(username))
             .catch(err => false);
     }
 
-    async setaccount(username, account, signature){
-        return eos.contract.setaccount(fingerprinted(username), account, signature, eos.options)
+    async setAccountFromAccount(username, account){
+        return eos.contract.setaccacc(username, account, eos.options)
+            .then(() => this.get(username))
+            .catch(err => false);
+    }
+
+    async setAccountFromKey(username, account, signature){
+        return eos.contract.setacckey(username, account, signature, eos.options)
             .then(() => this.get(username))
             .catch(err => false);
     }
 
     async release(username, signedHash){
-        return eos.contract.release(fingerprinted(username), eos.account.name, signedHash, eos.options)
+        return eos.contract.release(username, signedHash, eos.options)
             .then(() => true)
             .catch(err => false);
     }
@@ -71,9 +76,12 @@ export default class IdentityService {
         amount = parseFloat(amount.toString().split(' ')[0]).toFixed(4);
         if(amount <= 0) throw new Error("Amount must be greater than 0");
 
-        return eos.token.transfer(eos.account.name, 'ridlridlridl', `${amount} RIDL`, `${eos.account.name} ${username}`, eos.options)
-            .then(res => res)
-            .catch(err => false);
+		return eos.writer.transaction(['ridlridlcoin', 'ridlridlridl'], contracts => {
+			contracts.ridlridlcoin.transfer(eos.account.name, 'ridlridlridl', `${amount} RIDL`, '', eos.options);
+			contracts.ridlridlridl.loadtokens(eos.account.name, username, `${amount} RIDL`, eos.options);
+		})
+			.then(() => this.get(username))
+			.catch(err => false);
     }
 
     async identityBalance(username){

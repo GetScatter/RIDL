@@ -1,9 +1,10 @@
 export default class ClaimReservation {
 
-    constructor(username = '', sig = '', key = ''){
+    constructor(username = '', key = '', sig = '', account = ''){
         this.username = username;
-        this.sig = sig;
         this.key = key;
+        this.sig = sig;
+        this.account = account;
     }
 
     static fromJson(json){
