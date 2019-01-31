@@ -8,12 +8,8 @@ export default class ReputationService {
 
     constructor(){}
 
-    async repute(username, entity, fragments){
-        return eos.contract.repute(username, entity, fragments, eos.options);
-    }
-
-    async unrepute(username, entity){
-        return eos.contract.unrepute(username, entity, eos.options);
+    async repute(username, entity, fragments, details = ''){
+        return eos.contract.repute(username, entity, fragments, details, eos.options);
     }
 
     async votetype(username, type){
