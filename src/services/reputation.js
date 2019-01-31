@@ -59,9 +59,23 @@ export default class ReputationService {
         return reputation;
     }
 
-    async getFragments(){
+    async getFragments(base = null){
+        if(!!base) return eos.read({
+	        table:'reptypes',
+	        key_type:'i64',
+	        index_position:2,
+	        index:fingerprinted(base),
+            search:1,
+	        limit:100,
+        });
+
         return eos.read({
             table:'reptypes',
+	        key_type:'i64',
+	        index_position:2,
+	        index:0,
+	        search:1,
+            limit:100,
         })
     }
 

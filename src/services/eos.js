@@ -67,8 +67,8 @@ export const canConnect = async () => {
 };
 
 
-export const read = async ({table, index, upper_bound = null, limit = 10, model = null, scope = code, firstOnly = false, rowsOnly = false, key_type = null, index_position = null}) => {
-	let additions = index !== null ? {lower_bound:index, upper_bound: upper_bound ? upper_bound : BigNumber(index).plus(limit).toString()} : {};
+export const read = async ({table, index = null, upper_bound = null, limit = 10, model = null, scope = code, firstOnly = false, rowsOnly = false, key_type = null, index_position = null, search = null}) => {
+	let additions = index !== null ? {lower_bound:index, upper_bound: upper_bound ? upper_bound : BigNumber(index).plus(search !== null ? search : limit).toString()} : {};
 	if(key_type) additions = Object.assign({key_type}, additions);
 	if(index_position) additions = Object.assign({index_position}, additions);
 	return await reader.getTableRows(Object.assign({ json:true, code, scope, table, limit }, additions)).then(result => {
