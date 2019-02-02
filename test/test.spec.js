@@ -25,7 +25,7 @@ describe('Test', () => {
     it('should get the fragments', done => {
         new Promise(async() => {
             console.log('global', await ridl.reputation.getFragments());
-            console.log('based', await ridl.reputation.getFragments('app:fortnite'));
+            console.log('based', await ridl.reputation.getFragments('app::fortnite'));
             done();
         })
     });
