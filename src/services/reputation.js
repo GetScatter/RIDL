@@ -1,7 +1,6 @@
 import * as eos from './eos'
 import murmur from 'murmurhash';
-import ReputationFragment from '../models/ReputationFragment'
-import {Fragment, RepType} from "../models/Reputable";
+import {Fragment, RepType, Reputation} from "../models/Reputable";
 import Reputable from "../models/Reputable";
 
 const fingerprinted = str => murmur.v2(str);
@@ -39,7 +38,7 @@ const getReputation = async reputable => {
 	});
 
 	delete reputation.fingerprint;
-	return reputation;
+	return Reputation.fromJson(reputation);
 }
 
 export default class ReputationService {

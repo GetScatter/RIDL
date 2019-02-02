@@ -15,6 +15,16 @@ export default class Reputable {
 	static fromJson(json){ return Object.assign(Reputable.placeholder(), json); }
 }
 
+export class Reputation {
+	constructor(){
+		this.fragments = [];
+		this.total_reputes = 0;
+	}
+
+	static placeholder(){ return new Reputation(); }
+	static fromJson(json){ return Object.assign(Reputation.placeholder(), json); }
+}
+
 export class RepType {
 	constructor(){
 		this.fingerprint = '';

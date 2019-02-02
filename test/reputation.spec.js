@@ -1,11 +1,7 @@
 import ridl from '../src/ridl'
-import ecc from 'eosjs-ecc';
-import * as eos from '../src/services/eos'
-import ReputationFragment from '../src/models/ReputationFragment'
 import { assert } from 'chai';
 import 'mocha';
 
-import murmur from 'murmurhash';
 import Network from "../src/models/Network";
 
 const host = `192.168.1.6`;
