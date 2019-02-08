@@ -25,14 +25,10 @@ const userAuth = (other = false) =>
 
 describe('IdentityService', () => {
 
-	ridl.identity.setSymbol('SYS');
-
     let identified = null;
 
     const reservation = {username:"hello",key:publicKey};
     const hash = ecc.sha256('ridl');
-
-    // console.log(ecc.sha256('ridl'))
 
     it('should clean the contract', done => {
         new Promise(async() => {

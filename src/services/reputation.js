@@ -71,6 +71,28 @@ export default class ReputationService {
         return reputable;
     }
 
+    async searchForEntity(name){
+
+        const reputables = await eos.read({
+	        table:'reputables',
+	        index:fingerprinted(name),
+	        key_type:'i64',
+	        index_position:2,
+	        limit:500,
+	        rowsOnly:true,
+            model:Reputable
+        }).catch(() => null);
+
+        if(reputables.length) {
+        	await Promise.all(reputables.map(async reputable => {
+		        reputable.reputation = await getReputation(reputable);
+		        return true;
+	        }));
+        }
+
+        return reputables;
+    }
+
     async getFragments(base = 0){
         return eos.read({
 	        table:'reptypes',
@@ -84,13 +106,12 @@ export default class ReputationService {
         }).catch(() => []);
     }
 
-    async getFragmentsFor(reputable){
-        console.log('reputable', reputable);
+    async getFragmentsFor(reputable = null){
         const globalFragments = await this.getFragments();
-        const basedFragments = (await this.getFragments(reputable.fingerprint)).map(x => {
+        const basedFragments = reputable ? (await this.getFragments(reputable.fingerprint)).map(x => {
             x.isBased = true;
             return x;
-        });
+        }) : [];
         return globalFragments.concat(basedFragments);
     }
 }
