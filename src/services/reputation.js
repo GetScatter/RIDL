@@ -8,7 +8,7 @@ const fingerprinted = str => murmur.v2(str);
 const getReputation = async reputable => {
 	const reputation = await eos.read({
 		table:'reputations',
-		scope:fingerprinted(`${reputable.type}::${reputable.entity}`),
+		scope:reputable.fingerprint,
 		limit:1,
 		firstOnly:true
 	}).catch(() => null);
