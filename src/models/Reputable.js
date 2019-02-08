@@ -13,6 +13,14 @@ export default class Reputable {
 
 	static placeholder(){ return new Reputable(); }
 	static fromJson(json){ return Object.assign(Reputable.placeholder(), json); }
+
+	readableType(){
+		switch(this.type){
+			case 'acc': return 'Account / Address';
+			case 'app': return 'Application';
+			case 'id': return 'Identity';
+		}
+	}
 }
 
 export class Reputation {
