@@ -1,66 +1,71 @@
-import ridl from '../src/ridl'
-import * as eos from '../src/services/eos'
 import { assert } from 'chai';
 import 'mocha';
 
-import Network from "../src/models/Network";
-import {Reputation} from "../src/models/Reputable";
+import {Reputation} from "../../src/models/Reputable";
+import Reputable from "../../src/models/Reputable";
 
-const host = `192.168.1.6`;
-const chainId = 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f';
-const network = Network.fromJson({ protocol:'http', port:8888, host, chainId, })
+const buildFragment = p => ({
+	fingerprint: 3425667939,
+	type: "social",
+	up: "0.0000 REP",
+	down: "3.0000 REP",
+	reputation:p ? p : (Math.random() - Math.random()),
+});
 
-const contractKey = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
-const privateKey = '5KNNCwxjTeCvhz5tZdcphA1RCEvSduCDkmQSVKkZTQunSD9Jfxw';
-const publicKey = 'EOS8YQzaYLxT17fWAPueQBxRjHehTQYZEvgPAWPPH4mAuwTJi3mPN';
-const account = {name:'test1account', authority:'active'};
-const account2 = {name:'test2account', authority:'active'};
-const username = 'helloworld';
-const username2 = 'helloworld2';
+let reputables = [
+	Reputable.fromJson({
+		entity:'1',
+		reputation:Reputation.fromJson({
+			fragments:[
+				buildFragment(0.1111),
+				buildFragment(0.221),
+				buildFragment(-0.0554),
+				buildFragment(-0.2111),
+			]
+		})
+	}),
+	Reputable.fromJson({
+		entity:'2',
+		reputation:Reputation.fromJson({
+			fragments:[
+				buildFragment(),
+				buildFragment(),
+				buildFragment(),
+				buildFragment(),
+			]
+		})
+	}),
+	Reputable.fromJson({
+		entity:'3',
+		reputation:Reputation.fromJson({
+			fragments:[
+				buildFragment(),
+				buildFragment(),
+				buildFragment(),
+				buildFragment(),
+			]
+		})
+	}),
+	Reputable.fromJson({
+		entity:'4',
+		reputation:Reputation.fromJson({
+			fragments:[
+				buildFragment(),
+			]
+		})
+	}),
+];
 
-const contractProvider = signargs => signargs.sign(signargs.buf, contractKey);
-const userProvider = signargs => signargs.sign(signargs.buf, privateKey);
 
-const contractAuth = () => ridl.init(network, {name:'ridlridlridl', authority:'active'}, contractProvider);
-const userAuth =     (acc) => ridl.init(network, acc ? acc : account, userProvider);
 
-describe('ReputationService', () => {
 
-    let reputation, reputable, fragTypes;
+describe('Reputables', () => {
 
 	it('should have averages and decimals', done => {
 		new Promise(async() => {
-			const reputation = Reputation.fromJson({
-				fragments:[
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "0.0000 REP",
-						down: "3.0000 REP"
-					},
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "5.0000 REP",
-						down: "0.0000 REP"
-					},
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "2.0000 REP",
-						down: "0.0000 REP"
-					},
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "0.0000 REP",
-						down: "1.0000 REP"
-					}
-				]
-			});
-
-			reputation.toAverage();
-			reputation.toDecimal();
+			reputables.map(reputable => {
+				console.log(`AVERAGE: ${reputable.averageReputation()} | DECIMAL: ${reputable.decimalReputation()} | PERCENTAGES: ${reputable.reputation.fragments.map(x => x.reputation).join(', ')}`);
+			})
 			done();
 		})
 	});

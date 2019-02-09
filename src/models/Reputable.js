@@ -9,6 +9,7 @@ export default class Reputable {
 		this.last_reputer = '';
 		this.owner = '';
 		this.total_rep = '';
+		this.reputation = null;
 	}
 
 	static placeholder(){ return new Reputable(); }
@@ -20,6 +21,23 @@ export default class Reputable {
 			case 'app': return 'Application';
 			case 'id': return 'Identity';
 		}
+	}
+
+	averageReputation(fingerprintFilters = null){
+		if(!this.reputation) return 0;
+		const fragments = !fingerprintFilters
+			? this.reputation.fragments
+			: this.reputation.fragments.filter(x => fingerprintFilters.includes(x.fingerprint));
+		return parseFloat((fragments.reduce((acc,x) => {
+			acc += parseFloat(x.reputation);
+			return acc;
+		}, 0)) / fragments.length).toFixed(4);
+	}
+
+	decimalReputation(fingerprintFilters = null, max = 5){
+		const average = this.averageReputation(fingerprintFilters);
+		const decimal = average * (max*2);
+		return parseFloat(decimal > max ? max : decimal < -max ? -max : decimal).toFixed(1);
 	}
 }
 
