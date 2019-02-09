@@ -7,6 +7,7 @@ export default class Reputable {
 		this.miner_til = -1;
 		this.miner_frags = [];
 		this.last_reputer = '';
+		this.last_repute_time = +new Date();
 		this.owner = '';
 		this.total_rep = '';
 		this.reputation = null;

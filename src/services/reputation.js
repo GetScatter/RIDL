@@ -50,7 +50,12 @@ const getReputation = async reputable => {
 		const tup = parseAsset(fragTotal.up);
 		const tdown = parseAsset(fragTotal.down);
 
-		frag.reputation = parseFloat(((up > 0 ? (up/tup) : 0) - (down > 0 ? (down/tdown) : 0)).toFixed(4));
+		frag.reputation = ((up > 0 ? (up/tup) : 0) - (down > 0 ? (down/tdown) : 0));
+
+		const timeMod = (reputable.last_repute_time - Math.floor(+new Date()/1000)) / 100000;
+		if(frag.reputation > 0 && frag.reputation - timeMod > frag.reputation/2) frag.reputation = frag.reputation - timeMod;
+		if(frag.reputation < 0 && frag.reputation + timeMod < frag.reputation/2) frag.reputation = frag.reputation + timeMod;
+		frag.reputation = parseFloat(frag.reputation).toFixed(4);
 		frag.fingerprint = fragTotal.fingerprint;
 	});
 
