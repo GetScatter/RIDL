@@ -11,8 +11,8 @@ const buildFragment = p => {
 		type: "social",
 		// up: `${Math.round(Math.random() * 20)}.0000 REP`,
 		// down: `${Math.round(Math.random() * 2)}.0000 REP`,
-		up: `100.0000 REP`,
-		down: `15.0000 REP`,
+		up: `5.0000 REP`,
+		down: `8.0000 REP`,
 		reputation:p ? p : (Math.random() - Math.random()),
 		timeScaledReputation:p ? p : (Math.random() - Math.random()),
 	};

@@ -41,7 +41,7 @@ export default class Reputable {
 		const up = fragments.reduce((acc,x) => { acc+=parseFloat(x.up.split(' ')[0]); return acc;}, 0);
 		const down = fragments.reduce((acc,x) => { acc+=parseFloat(x.down.split(' ')[0]); return acc;}, 0);
 
-		return parseFloat((up-down)/100).toFixed(4);
+		return parseFloat((up-down)/(up+down)).toFixed(4);
 
 	}
 
