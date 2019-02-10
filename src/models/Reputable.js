@@ -1,6 +1,7 @@
 export default class Reputable {
 	constructor(){
 		this.fingerprint = '';
+		this.id = -1;
 		this.type = '';
 		this.entity = '';
 		this.miner = '';
@@ -11,6 +12,7 @@ export default class Reputable {
 		this.owner = '';
 		this.total_rep = '';
 		this.reputation = null;
+		this.parent = null;
 	}
 
 	static placeholder(){ return new Reputable(); }

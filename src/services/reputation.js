@@ -50,6 +50,7 @@ const getReputation = async reputable => {
 		const tup = parseAsset(fragTotal.up);
 		const tdown = parseAsset(fragTotal.down);
 
+		// TODO: Might be an issue here.
 		frag.reputation = ((up > 0 ? (up/tup) : 0) - (down > 0 ? (down/tdown) : 0));
 
 		const timeMod = (Math.floor(+new Date()/1000) - reputable.last_repute_time) / 100000000;
@@ -66,6 +67,26 @@ const getReputation = async reputable => {
 	return Reputation.fromJson(reputation);
 }
 
+const getParents = async (reputable, last = null) => {
+	if(reputable.base === 0) return true;
+	if(last && last.base === 0) return true;
+
+	const parent = await eos.read({
+		table:'reputables',
+		index:last ? last.base : reputable.base,
+		key_type:'i64',
+		index_position:3,
+		limit:1,
+		firstOnly:true,
+		model:Reputable
+	}).catch(() => null);
+
+	if(last) last.parent = parent;
+	else reputable.parent = parent;
+
+	return await getParents(reputable, last);
+};
+
 export default class ReputationService {
 
     constructor(){}
@@ -80,7 +101,7 @@ export default class ReputationService {
 	 */
     async repute(username, entity, fragments, options = {}){
     	const network_id = options.network_id || '';
-    	const base = options.base ? options.base.fingerprint : 0;
+    	const base = options.base ? options.base.id : 0;
     	const details = options.details || '';
 
         if(!username.length) throw new Error('Invalid username');
@@ -104,7 +125,10 @@ export default class ReputationService {
             model:Reputable
         }).catch(() => null);
 
-        if(reputable) await getReputations([reputable]);
+        if(!reputable) return null;
+
+        await getReputations([reputable]);
+        await getParents(reputable);
 
         return reputable;
     }
@@ -121,7 +145,10 @@ export default class ReputationService {
             model:Reputable
         }).catch(() => null);
 
-        if(reputables.length) await getReputations(reputables);
+        if(reputables.length) {
+	        await getReputations(reputables);
+	        await Promise.all(reputables.map(reputable => getParents(reputable)));
+        }
 
         return reputables;
     }
