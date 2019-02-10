@@ -9,9 +9,12 @@ const buildFragment = p => {
 	return {
 		fingerprint: 3425667939,
 		type: "social",
-		up: `${Math.round(Math.random() * 20)}.0000 REP`,
-		down: `${Math.round(Math.random() * 2)}.0000 REP`,
+		// up: `${Math.round(Math.random() * 20)}.0000 REP`,
+		// down: `${Math.round(Math.random() * 2)}.0000 REP`,
+		up: `100.0000 REP`,
+		down: `15.0000 REP`,
 		reputation:p ? p : (Math.random() - Math.random()),
+		timeScaledReputation:p ? p : (Math.random() - Math.random()),
 	};
 };
 
@@ -67,7 +70,7 @@ describe('Reputables', () => {
 	it('should have averages and decimals', done => {
 		new Promise(async() => {
 			reputables.map(reputable => {
-				console.log(`AVERAGE: ${reputable.averageReputation(true)} | DECIMAL: ${reputable.decimalReputation(true)} | PERCENTAGES: ${reputable.reputation.fragments.map(x => x.reputation).join(', ')}`);
+				console.log(`AVERAGE: ${reputable.averageReputation(1)} | DECIMAL: ${reputable.decimalReputation(1)} | PERCENTAGES: ${reputable.reputation.fragments.map(x => x.reputation).join(', ')}`);
 			})
 			done();
 		})
