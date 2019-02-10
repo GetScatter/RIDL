@@ -52,7 +52,7 @@ const getReputation = async reputable => {
 
 		frag.reputation = ((up > 0 ? (up/tup) : 0) - (down > 0 ? (down/tdown) : 0));
 
-		const timeMod = (reputable.last_repute_time - Math.floor(+new Date()/1000)) / 100000;
+		const timeMod = (Math.floor(+new Date()/1000) - reputable.last_repute_time) / 100000000;
 		if(frag.reputation > 0 && frag.reputation - timeMod > frag.reputation/2) frag.timeScaledReputation = frag.reputation - timeMod;
 		else if(frag.reputation < 0 && frag.reputation + timeMod < frag.reputation/2) frag.timeScaledReputation = frag.reputation + timeMod;
 		else frag.timeScaledReputation = frag.reputation;

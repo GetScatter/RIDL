@@ -28,74 +28,38 @@ describe('ReputationService', () => {
 
     let reputation, reputable, fragTypes;
 
-	it('should have averages and decimals', done => {
-		new Promise(async() => {
-			const reputation = Reputation.fromJson({
-				fragments:[
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "0.0000 REP",
-						down: "3.0000 REP"
-					},
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "5.0000 REP",
-						down: "0.0000 REP"
-					},
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "2.0000 REP",
-						down: "0.0000 REP"
-					},
-					{
-						fingerprint: 3425667939,
-						type: "social",
-						up: "0.0000 REP",
-						down: "1.0000 REP"
-					}
-				]
-			});
+    it('should setup ridl', done => {
+        new Promise(async() => {
+	        await userAuth();
+            done();
+        })
+    });
 
-			reputation.toAverage();
-			reputation.toDecimal();
+    it('should have two identities to use', done => {
+        new Promise(async() => {
+            assert(!!await ridl.identity.get(username), "Username1 does not match or exist");
+            assert(!!await ridl.identity.get(username2), "Username2 does not match or exist");
+            done();
+        })
+    });
+
+    it('should be able to get an entity reputation', done => {
+        new Promise(async() => {
+            reputable = await ridl.reputation.getEntity('app::get-scatter.com');
+            console.log(reputable.reputation.fragments[0]);
+            done();
+        })
+    })
+
+	it('should have some rep types including based ones', done => {
+		new Promise(async() => {
+			fragTypes = await ridl.reputation.getFragmentsFor(reputable);
+			assert(fragTypes.length, "Could not get frag types, are you sure you initialized the contract properly?");
+			// assert(fragTypes.some(x => x.base === reputable.fingerprint), "Could not get based frag types, are you sure the entity has based frag types?");
 			done();
-		})
+		});
 	});
 
-    // it('should setup ridl', done => {
-    //     new Promise(async() => {
-	//         await userAuth();
-    //         done();
-    //     })
-    // });
-	//
-    // it('should have two identities to use', done => {
-    //     new Promise(async() => {
-    //         assert(!!await ridl.identity.get(username), "Username1 does not match or exist");
-    //         assert(!!await ridl.identity.get(username2), "Username2 does not match or exist");
-    //         done();
-    //     })
-    // });
-	//
-    // // it('should be able to get an entity reputation', done => {
-    // //     new Promise(async() => {
-    // //         reputable = await ridl.reputation.getEntity('app::fortnite');
-    // //         done();
-    // //     })
-    // // })
-	//
-	// it('should have some rep types including based ones', done => {
-	// 	new Promise(async() => {
-	// 		fragTypes = await ridl.reputation.getFragmentsFor(reputable);
-	// 		assert(fragTypes.length, "Could not get frag types, are you sure you initialized the contract properly?");
-	// 		// assert(fragTypes.some(x => x.base === reputable.fingerprint), "Could not get based frag types, are you sure the entity has based frag types?");
-	// 		done();
-	// 	});
-	// });
-	//
     // it('should repute and become the mine owner', done => {
     //     new Promise(async() => {
 	//         await userAuth();
