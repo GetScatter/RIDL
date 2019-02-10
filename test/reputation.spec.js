@@ -45,20 +45,37 @@ describe('ReputationService', () => {
 
     it('should be able to get an entity reputation', done => {
         new Promise(async() => {
-            reputable = await ridl.reputation.getEntity('app::get-scatter.com');
-            console.log(reputable.reputation.fragments[0]);
+            reputable = await ridl.reputation.getEntity('acc::eosio.token', 'eos::cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f');
+            assert(reputable, "Could not find reputable by fingerprint");
             done();
         })
     })
 
-	it('should have some rep types including based ones', done => {
+    it('should be able to search for an entity by name', done => {
+        new Promise(async() => {
+            const reputables = await ridl.reputation.searchForEntity('eosio.token');
+	        assert(reputables.length, "Could not find reputable by name");
+            done();
+        })
+    })
+
+	it('should be able to get an entity reputation with parents', done => {
 		new Promise(async() => {
-			fragTypes = await ridl.reputation.getFragmentsFor(reputable);
-			assert(fragTypes.length, "Could not get frag types, are you sure you initialized the contract properly?");
-			// assert(fragTypes.some(x => x.base === reputable.fingerprint), "Could not get based frag types, are you sure the entity has based frag types?");
+			const parented = await ridl.reputation.getEntity('act::updateauth', '', 1);
+			console.log('parented', parented);
+			assert(parented, "Could not find reputable by fingerprint with parents");
 			done();
-		});
-	});
+		})
+	})
+
+	// it('should have some rep types including based ones', done => {
+	// 	new Promise(async() => {
+	// 		fragTypes = await ridl.reputation.getFragmentsFor(reputable);
+	// 		assert(fragTypes.length, "Could not get frag types, are you sure you initialized the contract properly?");
+	// 		// assert(fragTypes.some(x => x.base === reputable.fingerprint), "Could not get based frag types, are you sure the entity has based frag types?");
+	// 		done();
+	// 	});
+	// });
 
     // it('should repute and become the mine owner', done => {
     //     new Promise(async() => {

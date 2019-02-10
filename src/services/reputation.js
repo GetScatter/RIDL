@@ -84,7 +84,7 @@ const getParents = async (reputable, last = null) => {
 	if(last) last.parent = parent;
 	else reputable.parent = parent;
 
-	return await getParents(reputable, last);
+	return await getParents(reputable, parent);
 };
 
 export default class ReputationService {
@@ -115,11 +115,11 @@ export default class ReputationService {
         return eos.contract.votetype(username, type, eos.options);
     }
 
-    async getEntity(entity){
+    async getEntity(entity, network_id = "", base = ""){
 
         const reputable = await eos.read({
 	        table:'reputables',
-	        index:fingerprinted(entity),
+	        index:fingerprinted(entity + network_id.toString() + base.toString()),
 	        limit:1,
 	        firstOnly:true,
             model:Reputable
