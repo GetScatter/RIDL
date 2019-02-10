@@ -24,19 +24,30 @@ export default class Reputable {
 		}
 	}
 
-	averageReputation(fingerprintFilters = null, withScaling = true){
+	averageReputation(localized = false, fingerprintFilters = null, withScaling = true){
 		if(!this.reputation) return 0;
+
 		const fragments = !fingerprintFilters
 			? this.reputation.fragments
 			: this.reputation.fragments.filter(x => fingerprintFilters.includes(x.fingerprint));
-		return parseFloat((fragments.reduce((acc,x) => {
-			acc += parseFloat(withScaling ? x.timeScaledReputation : x.reputation);
-			return acc;
-		}, 0)) / fragments.length).toFixed(4);
+
+		if(!localized){
+			return parseFloat((fragments.reduce((acc,x) => {
+				acc += parseFloat(withScaling ? x.timeScaledReputation : x.reputation);
+				return acc;
+			}, 0)) / fragments.length).toFixed(4);
+		}
+
+		let total = 0;
+		fragments.map(x => total += (parseFloat(x.up.split(' ')[0])-parseFloat(x.down.split(' ')[0]))/100)
+
+
+		return parseFloat(total).toFixed(4);
+
 	}
 
-	decimalReputation(fingerprintFilters = null, max = 5, withScaling = true){
-		const average = this.averageReputation(fingerprintFilters, withScaling);
+	decimalReputation(localized = false, fingerprintFilters = null, max = 5, withScaling = true){
+		const average = this.averageReputation(localized, fingerprintFilters, withScaling);
 		const decimal = average * (max*2);
 		return parseFloat(decimal > max ? max : decimal < -max ? -max : decimal).toFixed(1);
 	}

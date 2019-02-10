@@ -4,13 +4,16 @@ import 'mocha';
 import {Reputation} from "../../src/models/Reputable";
 import Reputable from "../../src/models/Reputable";
 
-const buildFragment = p => ({
-	fingerprint: 3425667939,
-	type: "social",
-	up: "0.0000 REP",
-	down: "3.0000 REP",
-	reputation:p ? p : (Math.random() - Math.random()),
-});
+const buildFragment = p => {
+
+	return {
+		fingerprint: 3425667939,
+		type: "social",
+		up: `${Math.round(Math.random() * 20)}.0000 REP`,
+		down: `${Math.round(Math.random() * 2)}.0000 REP`,
+		reputation:p ? p : (Math.random() - Math.random()),
+	};
+};
 
 let reputables = [
 	Reputable.fromJson({
@@ -64,7 +67,7 @@ describe('Reputables', () => {
 	it('should have averages and decimals', done => {
 		new Promise(async() => {
 			reputables.map(reputable => {
-				console.log(`AVERAGE: ${reputable.averageReputation()} | DECIMAL: ${reputable.decimalReputation()} | PERCENTAGES: ${reputable.reputation.fragments.map(x => x.reputation).join(', ')}`);
+				console.log(`AVERAGE: ${reputable.averageReputation(true)} | DECIMAL: ${reputable.decimalReputation(true)} | PERCENTAGES: ${reputable.reputation.fragments.map(x => x.reputation).join(', ')}`);
 			})
 			done();
 		})
