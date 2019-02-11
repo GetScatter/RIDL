@@ -138,6 +138,26 @@ export default class ReputationService {
         return reputables;
     }
 
+    async searchByFingerprint(type = '', entity = '', network = '', base = 0){
+
+        const reputable = await eos.read({
+	        table:'reputables',
+	        index:fingerprinted(type+entity+network+base),
+	        key_type:'i64',
+	        index_position:3,
+	        limit:1,
+	        firstOnly:true,
+            model:Reputable
+        }).catch(() => null);
+
+	    if(!reputable) return null;
+
+	    await getReputations([reputable]);
+	    await getParents(reputable);
+
+	    return reputable;
+    }
+
     async getFragments(base = 0){
         return eos.read({
 	        table:'reptypes',
