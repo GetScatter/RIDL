@@ -3,7 +3,7 @@ import murmur from 'murmurhash';
 import {Fragment, RepType, Reputation} from "../models/Reputable";
 import Reputable from "../models/Reputable";
 
-const fingerprinted = str => murmur.v2(str);
+const fingerprinted = str => murmur.v2(str.toLowerCase());
 
 let repTotalCache = {};
 
@@ -19,7 +19,7 @@ const getReputations = async reputables => {
 const getReputation = async reputable => {
 	const reputation = await eos.read({
 		table:'reputations',
-		scope:reputable.fingerprint,
+		scope:reputable.id,
 		limit:1,
 		firstOnly:true
 	}).catch(() => null);
@@ -63,7 +63,7 @@ const getReputation = async reputable => {
 		frag.fingerprint = fragTotal.fingerprint;
 	});
 
-	delete reputation.fingerprint;
+	delete reputation.id;
 	return Reputation.fromJson(reputation);
 }
 
@@ -74,12 +74,12 @@ const getParents = async (reputable, last = null) => {
 	const parent = await eos.read({
 		table:'reputables',
 		index:last ? last.base : reputable.base,
-		key_type:'i64',
-		index_position:3,
 		limit:1,
 		firstOnly:true,
 		model:Reputable
 	}).catch(() => null);
+
+	console.log(parent);
 
 	if(last) last.parent = parent;
 	else reputable.parent = parent;
@@ -91,35 +91,20 @@ export default class ReputationService {
 
     constructor(){}
 
-	/***
-	 *
-	 * @param username - String
-	 * @param entity - String[type::name]
-	 * @param fragments - Array<Fragment>
-	 * @param options - {network_id:String[blockchain::chainId], base:Reputable, details:String}
-	 * @returns {Promise<*>}
-	 */
-    async repute(username, entity, fragments, options = {}){
-    	const network_id = options.network_id || '';
-    	const base = options.base ? options.base.id : 0;
-    	const details = options.details || '';
-
-        if(!username.length) throw new Error('Invalid username');
-        if(!entity.length || entity.indexOf('::') === -1) throw new Error('Invalid entity');
-        if(network_id.length && network_id.indexOf('::') === -1) throw new Error('Invalid entity');
+	async repute(username, id = 0, entity, type, fragments, network = "", parent = 0, details = ""){
         if(!fragments.every(frag => frag instanceof Fragment && frag.validate())) throw new Error('Invalid fragments');
-        return eos.contract.repute(username, entity, fragments, network_id, base, details, eos.options);
+        return eos.contract.repute(username, id, entity, type, fragments, network, parent, details, eos.options);
     }
 
     async votetype(username, type){
         return eos.contract.votetype(username, type, eos.options);
     }
 
-    async getEntity(entity, network_id = "", base = ""){
+    async getEntity(id){
 
         const reputable = await eos.read({
 	        table:'reputables',
-	        index:fingerprinted(entity + network_id.toString() + base.toString()),
+	        index:id,
 	        limit:1,
 	        firstOnly:true,
             model:Reputable
@@ -168,7 +153,7 @@ export default class ReputationService {
 
     async getFragmentsFor(reputable = null){
         const globalFragments = await this.getFragments();
-        const basedFragments = reputable ? (await this.getFragments(reputable.fingerprint)).map(x => {
+        const basedFragments = reputable ? (await this.getFragments(reputable.id)).map(x => {
             x.isBased = true;
             return x;
         }) : [];
