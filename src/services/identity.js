@@ -2,6 +2,8 @@ import * as eos from './eos'
 import Identity from '../models/Identity'
 import murmur from 'murmurhash';
 import {RepType} from "../models/Reputable";
+import {tokenCode} from "./eos";
+import {ridlCode} from "./eos";
 
 const fingerprinted = username => murmur.v2(username.toLowerCase());
 
@@ -54,8 +56,20 @@ export default class IdentityService {
 	 * @param key
 	 * @returns {Promise<T | boolean>}
 	 */
-	async rekey(username, key){
-        return eos.contract.rekey(username, key, eos.options)
+	async changekey(username, key){
+        return eos.contract.changekey(username, key, eos.options)
+            .then(() => this.get(username))
+            .catch(err => false);
+    }
+
+	/***
+	 * Changes the identity account
+	 * @param username
+	 * @param key
+	 * @returns {Promise<T | boolean>}
+	 */
+	async changeacc(username, newAccountName){
+        return eos.contract.changeacc(username, newAccountName, eos.options)
             .then(() => this.get(username))
             .catch(err => false);
     }
@@ -66,13 +80,13 @@ export default class IdentityService {
 	 * @param amount
 	 * @returns {Promise<T | boolean>}
 	 */
-	async topup(username, amount){
+	async loadtokens(username, amount){
         amount = parseFloat(amount.toString().split(' ')[0]).toFixed(4);
         if(amount <= 0) throw new Error("Amount must be greater than 0");
 
-		return eos.writer.transaction(['ridlridlcoin', 'ridlridlridl'], contracts => {
-			contracts.ridlridlcoin.transfer(eos.account.name, 'ridlridlridl', `${amount} RIDL`, '', eos.options);
-			contracts.ridlridlridl.topup(eos.account.name, username, `${amount} RIDL`, eos.options);
+		return eos.writer.transaction([tokenCode, ridlCode], contracts => {
+			contracts[tokenCode].transfer(eos.account.name, ridlCode, `${amount} RIDL`, '', eos.options);
+			contracts[ridlCode].loadtokens(username, `${amount} RIDL`, eos.options);
 		})
 			.then(() => this.get(username))
 			.catch(err => false);

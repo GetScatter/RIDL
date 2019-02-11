@@ -1,10 +1,7 @@
 import ridl, {FRAG_TYPES} from '../src/ridl'
-import * as eos from '../src/services/eos'
 import { assert } from 'chai';
 import 'mocha';
 
-import Network from "../src/models/Network";
-import {Reputation} from "../src/models/Reputable";
 import {
 	userAuth,
 	basicSetup,
@@ -85,7 +82,7 @@ describe('ReputationService', () => {
 
 	it('should be able to search for an entity by fingerprint', done => {
 		new Promise(async() => {
-			const found = await ridl.reputation.searchByFingerprint('acc', 'eosio.system', 'eos::cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f');
+			const found = await ridl.reputation.searchByFingerprint('acc', 'eosio.system', network.id());
 			assert(found, "Could not find reputable by fingerprint");
 			done();
 		})

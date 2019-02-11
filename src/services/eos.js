@@ -2,8 +2,8 @@ import Eos from 'eosjs';
 import Network from '../models/Network';
 import {BigNumber} from 'bignumber.js';
 
-const code = 'ridlridlridl';
-const tokenCode = 'ridlridlcoin';
+export const ridlCode = 'ridlridlridl';
+export const tokenCode = 'ridlridlcoin';
 
 export let writer = null;
 export let reader = null;
@@ -37,7 +37,7 @@ export const init = async (network, _account = null, signProvider = null) => {
 
     if(signProvider) {
         writer = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
-        contract = await writer.contract(code);
+        contract = await writer.contract(ridlCode);
         token = await writer.contract(tokenCode);
     } else {
         writer = null;
@@ -67,11 +67,11 @@ export const canConnect = async () => {
 };
 
 
-export const read = async ({table, index = null, upper_bound = null, limit = 10, model = null, scope = code, token = false, firstOnly = false, rowsOnly = false, key_type = null, index_position = null, search = null}) => {
+export const read = async ({table, index = null, upper_bound = null, limit = 10, model = null, scope = ridlCode, token = false, firstOnly = false, rowsOnly = false, key_type = null, index_position = null, search = null}) => {
 	let additions = index !== null ? {lower_bound:index, upper_bound: upper_bound ? upper_bound : BigNumber(index).plus(search !== null ? search : limit).toString()} : {};
 	if(key_type) additions = Object.assign({key_type}, additions);
 	if(index_position) additions = Object.assign({index_position}, additions);
-	return await reader.getTableRows(Object.assign({ json:true, code:token?tokenCode:code, scope, table, limit }, additions)).then(result => {
+	return await reader.getTableRows(Object.assign({ json:true, code:token?tokenCode:ridlCode, scope, table, limit }, additions)).then(result => {
 		if(model) result = formatRow(result, model);
 		if(firstOnly) return getFirstOnly(result);
 		if(rowsOnly) return getRowsOnly(result);
