@@ -16,4 +16,5 @@ export default class Network {
 
     hostport(){ return `${this.host}${this.port ? ':' : ''}${this.port}` }
     fullhost(){ return `${this.protocol}://${this.host}${this.port ? ':' : ''}${this.port}` }
+	id(){ return `eos::${this.chainId}` }
 }

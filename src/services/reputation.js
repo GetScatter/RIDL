@@ -79,8 +79,6 @@ const getParents = async (reputable, last = null) => {
 		model:Reputable
 	}).catch(() => null);
 
-	console.log(parent);
-
 	if(last) last.parent = parent;
 	else reputable.parent = parent;
 

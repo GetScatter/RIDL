@@ -92,7 +92,6 @@ export class Fragment {
 	static fromJson(json){ return Object.assign(Fragment.placeholder(), json); }
 
 	validate(){
-		console.log(this);
 		return (parseFloat(this.up.split(' ')[0]) > 0 || parseFloat(this.down.split(' ')[0]) > 0) &&
 			this.type.toString().length &&
 			this.fingerprint.toString().length

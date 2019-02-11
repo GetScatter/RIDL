@@ -91,13 +91,18 @@ export default class IdentityService {
 			.catch(err => console.error(err));
 	}
 
-	/***
-	 * Get's an identity's RIDL balance
-	 * @param username
-	 * @returns {Promise<T | never>}
-	 */
-    async balance(username){
+    async identityBalance(username){
         return getIdentity(username).then(res => res.tokens).catch(() => null);
+    }
+
+    async accountBalance(name, asFloat = false){
+	    return await eos.read({
+		    token:true,
+		    table:'accounts',
+		    scope:name,
+		    limit:1,
+		    firstOnly:true,
+	    }).then(x => asFloat ? parseFloat(x.balance.split(' ')[0]) : x.balance);
     }
 
     async exists(name){ return await this.get(name).then(x => !!x); }

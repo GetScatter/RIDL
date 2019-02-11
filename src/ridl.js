@@ -2,6 +2,15 @@ import * as eos from './services/eos'
 import IdentityService from './services/identity';
 import ReputationService from './services/reputation';
 
+
+export const FRAG_TYPES = {
+	BLOCKCHAIN_ADDR:'acc',
+	ACTION:'act',
+	APPLICATION:'app',
+	IDENTITY:'id',
+	OTHER:'etc',
+}
+
 class RIDL {
 
     constructor(){
