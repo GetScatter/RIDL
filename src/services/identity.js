@@ -1,11 +1,9 @@
 import * as eos from './eos'
 import Identity from '../models/Identity'
-import murmur from 'murmurhash';
 import {RepType} from "../models/Reputable";
 import {tokenCode} from "./eos";
 import {ridlCode} from "./eos";
-
-const fingerprinted = username => murmur.v2(username.toLowerCase());
+import {fingerprinted} from "../util/helpers";
 
 const getIdentity = async (username) => {
     return await eos.read({

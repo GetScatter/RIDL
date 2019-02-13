@@ -20,21 +20,20 @@ const userProvider = signargs => signargs.sign(signargs.buf, privateKey);
 export const contractAuth = () => ridl.init(network, {name:'ridlridlridl', authority:'active'}, contractProvider);
 export const userAuth =     (acc) => ridl.init(network, acc ? acc : account, userProvider);
 
+const auth = {authorization:[`ridlridlridl@active`]};
+
 export const forcetype = async (type, parent=0) => {
 	await contractAuth();
-	const auth = {authorization:[`ridlridlridl@active`]};
 	await eos.contract.forcetype(type, parent, "", "", auth);
 	return true;
 }
 
 export const basicSetup = async () => {
 	await contractAuth();
-	const auth = {authorization:[`ridlridlridl@active`]};
 	await eos.contract.clean('eosio', auth);
 
 	const BASE_FRAGS = ['security', 'privacy', 'scam', 'solvency', 'social', 'dangerous'];
 	await Promise.all(BASE_FRAGS.map(type => forcetype(type)));
-
 	return true;
 }
 
@@ -47,4 +46,11 @@ export const identitySetup = async() => {
 
 	await createIdentity(account, username);
 	await createIdentity(account2, username2);
+	return true;
+}
+
+export const testdata = async(id, rep, ridl) => {
+	await contractAuth();
+	await eos.contract.testdata(id, rep, ridl, auth);
+	return true;
 }

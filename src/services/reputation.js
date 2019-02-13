@@ -1,9 +1,7 @@
 import * as eos from './eos'
-import murmur from 'murmurhash';
 import {Fragment, RepType, Reputation} from "../models/Reputable";
 import Reputable from "../models/Reputable";
-
-const fingerprinted = str => murmur.v2(str.toLowerCase());
+import {fingerprinted} from "../util/helpers";
 
 let repTotalCache = {};
 

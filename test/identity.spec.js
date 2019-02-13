@@ -62,11 +62,11 @@ describe('IdentityService', () => {
 			await ridl.identity.loadtokens(username, 50);
 			setTimeout(async () => {
 				const balance = await ridl.identity.identityBalance(username);
-				assert(balance === '100.0000 RIDL', "Incorrect identity overflow balance");
+				assert(balance === '100.0000 RIDL', "Incorrect identity overflow balance: " + balance);
 				const after = ridl.identity.accountBalance(account.name, true);
 				assert(after === before-30, "Incorrect account return balance");
 				done();
-			}, 2 * 1000);
+			}, 3 * 1000);
 			done();
 		})
 	});

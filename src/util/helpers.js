@@ -1,3 +1,2 @@
-import ecc from 'eosjs-ecc';
-
-export const fingerprinted = data => ecc.sha256(data);
+import murmur from 'murmurhash';
+export const fingerprinted = data => murmur.v2(data);

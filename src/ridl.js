@@ -1,6 +1,7 @@
 import * as eos from './services/eos'
 import IdentityService from './services/identity';
 import ReputationService from './services/reputation';
+import BondService from "./services/bond";
 
 
 export const FRAG_TYPES = {
@@ -16,6 +17,7 @@ class RIDL {
     constructor(){
         this.identity =     new IdentityService();
         this.reputation =   new ReputationService();
+        this.bond =         new BondService();
     }
 
     /***

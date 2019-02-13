@@ -124,7 +124,7 @@ describe('ReputationService', () => {
 	        const after = await ridl.identity.accountBalance(account.name, true);
 
 	        assert(before < after, "Did not send miner tax");
-	        console.log(`Miner tax was: ${parseFloat(after - before).toFixed(4)} RIDL`)
+	        // console.log(`Miner tax was: ${parseFloat(after - before).toFixed(4)} RIDL`)
 
             done();
         })
