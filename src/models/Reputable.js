@@ -1,16 +1,18 @@
 export default class Reputable {
 	constructor(){
-		this.fingerprint = '';
 		this.id = -1;
 		this.type = '';
 		this.entity = '';
+		this.base = '';
+
 		this.miner = '';
 		this.miner_til = -1;
 		this.miner_frags = [];
 		this.last_reputer = '';
 		this.last_repute_time = +new Date();
 		this.owner = '';
-		this.total_rep = '';
+		this.network = '';
+
 		this.reputation = null;
 		this.parent = null;
 	}
@@ -23,6 +25,8 @@ export default class Reputable {
 			case 'acc': return 'Account / Address';
 			case 'app': return 'Application';
 			case 'id': return 'Identity';
+			case 'act': return 'Contract Action';
+			case 'etc': return 'Other';
 		}
 	}
 

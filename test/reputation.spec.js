@@ -37,7 +37,8 @@ describe('ReputationService', () => {
 			reputable = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.system', network.id());
 			assert(reputable, "Did not create eosio.system reputable.");
 
-			await ridl.reputation.repute(username, 0, 'updateauth', FRAG_TYPES.ACTION, fragments, '', reputable.id);
+			const badfrags = [fragTypes.find(x => x.type === 'dangerous').toFragment(-1)];
+			await ridl.reputation.repute(username, 0, 'updateauth', FRAG_TYPES.ACTION, badfrags, '', reputable.id);
 			reputable = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'updateauth', '', reputable.id);
 			assert(reputable, "Did not create updateauth reputable.");
 			assert(reputable.parent, "Updateauth reputable did not have a parent.");
@@ -129,5 +130,26 @@ describe('ReputationService', () => {
             done();
         })
     });
+
+	it('should create a bunch of reputables', done => {
+		new Promise(async() => {
+			await userAuth(account);
+			const fragments = [fragTypes[0].toFragment(1)];
+			await ridl.reputation.repute(username, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, network.id());
+			await ridl.reputation.repute(username, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments);
+			await ridl.reputation.repute(username, 0, 'scatterfunds', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments);
+			await ridl.reputation.repute(username, 0, 'get-scatter.com', FRAG_TYPES.APPLICATION, fragments);
+			await ridl.reputation.repute(username, 0, 'gets-scatter.com', FRAG_TYPES.APPLICATION, [fragTypes.find(x => x.type === 'scam').toFragment(-1)]);
+			await ridl.reputation.repute(username, 0, 'telosfoundation.io', FRAG_TYPES.APPLICATION, fragments);
+			await ridl.reputation.repute(username, 0, 'telos-foundation.io', FRAG_TYPES.APPLICATION, [fragTypes.find(x => x.type === 'scam').toFragment(-1)]);
+
+			await userAuth(account2);
+			await ridl.reputation.repute(username2, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments);
+			await ridl.reputation.repute(username2, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, [fragTypes[1].toFragment(1)]);
+			await ridl.reputation.repute(username2, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, [fragTypes[2].toFragment(-1)]);
+			await ridl.reputation.repute(username2, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, [fragTypes[3].toFragment(1)]);
+			done();
+		})
+	});
 
 });
