@@ -19,6 +19,7 @@ export default class Reputable {
 
 	static placeholder(){ return new Reputable(); }
 	static fromJson(json){ return Object.assign(Reputable.placeholder(), json); }
+	clone(){ return Reputable.fromJson(JSON.parse(JSON.stringify(this))) }
 
 	readableType(){
 		switch(this.type){
@@ -66,6 +67,7 @@ export class Reputation {
 
 	static placeholder(){ return new Reputation(); }
 	static fromJson(json){ return Object.assign(Reputation.placeholder(), json); }
+	clone(){ return Reputation.fromJson(JSON.parse(JSON.stringify(this))) }
 }
 
 export class RepType {
@@ -79,6 +81,7 @@ export class RepType {
 
 	static placeholder(){ return new RepType(); }
 	static fromJson(json){ return Object.assign(RepType.placeholder(), json); }
+	clone(){ return RepType.fromJson(JSON.parse(JSON.stringify(this))) }
 	toFragment(weight){
 		return new Fragment(this.type, weight, this.fingerprint);
 	}
@@ -94,6 +97,7 @@ export class Fragment {
 
 	static placeholder(){ return new Fragment('none', 0); }
 	static fromJson(json){ return Object.assign(Fragment.placeholder(), json); }
+	clone(){ return Fragment.fromJson(JSON.parse(JSON.stringify(this))) }
 
 	validate(){
 		return (parseFloat(this.up.split(' ')[0]) > 0 || parseFloat(this.down.split(' ')[0]) > 0) &&

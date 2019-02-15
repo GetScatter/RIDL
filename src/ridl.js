@@ -2,7 +2,7 @@ import * as eos from './services/eos'
 import IdentityService from './services/identity';
 import ReputationService from './services/reputation';
 import BondService from "./services/bond";
-import Reputable from "./models/Reputable";
+import Reputable, {Reputation, Fragment, RepType} from "./models/Reputable";
 
 
 const FRAG_TYPES = {
@@ -15,6 +15,9 @@ const FRAG_TYPES = {
 
 export {
 	Reputable,
+	Reputation,
+	Fragment,
+	RepType,
 	FRAG_TYPES,
 };
 
