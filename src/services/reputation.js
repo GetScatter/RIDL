@@ -22,6 +22,8 @@ const getReputation = async reputable => {
 		firstOnly:true
 	}).catch(() => null);
 
+	if(!reputation) return Reputation.placeholder();
+
 	const fragTotals = await Promise.all(reputation.fragments.map(async x => {
 
 		if(repTotalCache.hasOwnProperty(x.fingerprint)) return repTotalCache[x.fingerprint];
@@ -87,7 +89,16 @@ export default class ReputationService {
 
     constructor(){}
 
-	async repute(username, id = 0, entity, type, fragments, network = "", parent = 0, details = ""){
+	async repute(username, id = 0, entity, type, fragments, network = "", parent = '', details = ""){
+    	if(entity.indexOf('::') > -1) throw new Error('Entities can not have "::" in them.');
+
+		if (parent instanceof Reputable) parent = parent.id === -1
+			? `fingerprint::${parent.entity}::${parent.type}::${parent.network}`
+			: `id::${parent.id}`;
+		else if(typeof parent === 'number') parent = `id::${parent}`;
+		else if(typeof parent === 'string' && parent.toString().length > 0 && parent.indexOf('::') > -1)parent = `fingerprint::${parent}`;
+
+
         if(!fragments.every(frag => frag instanceof Fragment && frag.validate())) throw new Error('Invalid fragments');
         return eos.contract.repute(username, id, entity, type, fragments, network, parent, details, eos.options);
     }

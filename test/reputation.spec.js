@@ -34,14 +34,35 @@ describe('ReputationService', () => {
 		new Promise(async() => {
 			const fragments = [fragTypes[0].toFragment(1)];
 			await ridl.reputation.repute(username, 0, 'eosio.system', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, network.id());
-			reputable = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.system', network.id());
-			assert(reputable, "Did not create eosio.system reputable.");
+			const parent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.system', network.id());
+			assert(parent, "Did not create eosio.system reputable.");
 
+			// parent to id reputable
 			const badfrags = [fragTypes.find(x => x.type === 'dangerous').toFragment(-1)];
-			await ridl.reputation.repute(username, 0, 'updateauth', FRAG_TYPES.ACTION, badfrags, '', reputable.id);
-			reputable = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'updateauth', '', reputable.id);
+			await ridl.reputation.repute(username, 0, 'updateauth', FRAG_TYPES.ACTION, badfrags, '', parent);
+			reputable = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'updateauth', '', parent.id);
 			assert(reputable, "Did not create updateauth reputable.");
-			assert(reputable.parent, "Updateauth reputable did not have a parent.");
+			assert(reputable.parent && reputable.parent.id === parent.id, "updateauth reputable did not have a parent.");
+
+			// parent to string reputable
+			const noId = parent.clone();
+			noId.id = -1;
+			await ridl.reputation.repute(username, 0, 'regprod', FRAG_TYPES.ACTION, fragments, '', noId);
+			const test1 = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'regprod', '', parent.id);
+			assert(test1, "Did not create regprod reputable.");
+			assert(test1.parent && test1.parent.id === parent.id, "regprod reputable did not have a parent.");
+
+			// auto parent creation
+			await ridl.reputation.repute(username, 0, 'transfer', FRAG_TYPES.ACTION, fragments, '', 'eosio.token::acc');
+			const testParent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.token', '', 0);
+			assert(testParent, "Did not create eosio.token parent reputable.");
+			const testChild = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'transfer', '', testParent.id);
+			assert(testChild, "Did not create transfer reputable.");
+			assert(testChild.parent && testChild.parent.id === testParent.id, "transfer reputable did not have a parent.");
+			await ridl.reputation.repute(username, 0, 'burn', FRAG_TYPES.ACTION, fragments, '', 'eosio.token::acc');
+			const testChild2 = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'burn', '', testParent.id);
+			assert(testChild2, "Did not create burn reputable.");
+			assert(testChild2.parent && testChild2.parent.id === testParent.id, "burn reputable did not have a parent.");
 			done();
 		})
 	});
@@ -54,8 +75,6 @@ describe('ReputationService', () => {
 			done();
 		})
 	});
-
-
 
     it('should be able to get an entity reputation', done => {
         new Promise(async() => {

@@ -21,8 +21,8 @@ export default class Reputable {
 	static fromJson(json){ return Object.assign(Reputable.placeholder(), json); }
 	clone(){ return Reputable.fromJson(JSON.parse(JSON.stringify(this))) }
 
-	readableType(){
-		switch(this.type){
+	readableType(type = null){
+		switch(type ? type : this.type){
 			case 'acc': return 'Account / Address';
 			case 'app': return 'Application';
 			case 'id': return 'Identity';
