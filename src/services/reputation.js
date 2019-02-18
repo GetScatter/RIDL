@@ -135,7 +135,7 @@ export default class ReputationService {
 	        limit:500,
 	        rowsOnly:true,
             model:Reputable
-        }).catch(() => null);
+        }).catch(() => []);
 
         if(reputables.length) {
 	        await getReputations(reputables);
