@@ -44,6 +44,9 @@ describe('ReputationService', () => {
 			assert(reputable, "Did not create updateauth reputable.");
 			assert(reputable.parent && reputable.parent.id === parent.id, "updateauth reputable did not have a parent.");
 
+			// parent of parent
+			await ridl.reputation.repute(username, 0, 'updateauth2', FRAG_TYPES.OTHER, badfrags, '', reputable);
+
 			// parent to string reputable
 			const noId = parent.clone();
 			noId.id = -1;

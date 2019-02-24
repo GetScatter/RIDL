@@ -9,7 +9,7 @@ const getIdentity = async (username) => {
     return await eos.read({
         table:'ids',
 	    key_type:'i64',
-	    index_position:3,
+	    index_position:2,
         index:fingerprinted(username),
         limit:1,
         model:Identity,
@@ -33,6 +33,28 @@ export default class IdentityService {
 	 */
 	async get(username){
         return getIdentity(username);
+    }
+
+    async getById(id){
+	    return await eos.read({
+		    table:'ids',
+		    index:id,
+		    limit:1,
+		    model:Identity,
+		    firstOnly:true,
+	    });
+    }
+
+    async getByAccount(accountName){
+	    return await eos.read({
+		    table:'ids',
+		    key_type:'i64',
+		    index_position:3,
+		    index:accountName,
+		    limit:1,
+		    model:Identity,
+		    firstOnly:true,
+	    });
     }
 
 	/***
