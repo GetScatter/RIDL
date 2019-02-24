@@ -126,6 +126,23 @@ describe('IdentityService', () => {
         })
     });
 
+    it('should be able to fetch an identity by ID', done => {
+        new Promise(async() => {
+            const result = await ridl.identity.getById(1);
+            assert(result, "Identity not found");
+            done();
+        })
+    });
+
+    it('should be able to fetch owned identities by account name', done => {
+        new Promise(async() => {
+            const results = await ridl.identity.getByAccount(account.name);
+            console.log(results);
+            assert(results.length, "Identity not found");
+            done();
+        })
+    });
+
 
 
 
