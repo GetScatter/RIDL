@@ -125,6 +125,12 @@ export default class ReputationService {
         return reputable;
     }
 
+    async getReputationAndParents(reputable){
+	    await getReputations([reputable]);
+	    await getParents(reputable);
+	    return true;
+    }
+
     async searchForEntity(name){
 
         const reputables = await eos.read({
@@ -163,6 +169,27 @@ export default class ReputationService {
 	    await getParents(reputable);
 
 	    return reputable;
+    }
+
+    async searchByParent(parentId){
+
+	    const reputables = await eos.read({
+		    table:'reputables',
+		    index:parentId,
+		    search:0,
+		    key_type:'i64',
+		    index_position:4,
+		    limit:500,
+		    rowsOnly:true,
+		    model:Reputable
+	    }).catch(() => []);
+
+	    if(reputables.length) {
+		    await getReputations(reputables);
+		    await Promise.all(reputables.map(reputable => getParents(reputable)));
+	    }
+
+	    return reputables;
     }
 
     async getFragments(base = 0){

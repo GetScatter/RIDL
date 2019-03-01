@@ -1,9 +1,10 @@
 export default class Network {
-    constructor(_protocol = 'https', _host = '', _port = 0, chainId = ''){
+    constructor(_protocol = 'https', _host = '', _port = 0, chainId = '', blockchain = 'eos'){
         this.protocol = _protocol;
         this.host = _host;
         this.port = _port;
         this.chainId = chainId.toString();
+        this.blockchain = blockchain;
     }
 
     static placeholder(){ return new Network(); }
@@ -16,5 +17,5 @@ export default class Network {
 
     hostport(){ return `${this.host}${this.port ? ':' : ''}${this.port}` }
     fullhost(){ return `${this.protocol}://${this.host}${this.port ? ':' : ''}${this.port}` }
-	id(){ return `eos::${this.chainId}` }
+	id(){ return `${this.blockchain}::${this.chainId}` }
 }

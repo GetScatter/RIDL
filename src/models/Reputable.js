@@ -15,10 +15,17 @@ export default class Reputable {
 
 		this.reputation = null;
 		this.parent = null;
+		this.children = [];
 	}
 
 	static placeholder(){ return new Reputable(); }
-	static fromJson(json){ return Object.assign(Reputable.placeholder(), json); }
+	static fromJson(json){
+		let p = Object.assign(Reputable.placeholder(), json);
+		if(json.hasOwnProperty('reputation')) p.reputation = Reputation.fromJson(json.reputation);
+		if(json.hasOwnProperty('parent') && json.parent) p.parent = Reputable.fromJson(json.parent);
+		if(json.hasOwnProperty('children') && json.children.length) p.children = json.children.map(x => Reputable.fromJson(x));
+		return p;
+	}
 	clone(){ return Reputable.fromJson(JSON.parse(JSON.stringify(this))) }
 
 	readableType(type = null){
@@ -37,6 +44,8 @@ export default class Reputable {
 		const fragments = !fingerprintFilters
 			? this.reputation.fragments
 			: this.reputation.fragments.filter(x => fingerprintFilters.includes(x.fingerprint));
+
+		if(!fragments.length) return 0;
 
 		if(!localized){
 			return parseFloat((fragments.reduce((acc,x) => {

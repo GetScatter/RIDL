@@ -15,9 +15,22 @@ import {
 	contractAuth, forcetype
 } from './_helpers'
 
+const randomMemo = () => {
+	const s = 'abc defg hijklmn opqr stuvwxyz'.split('');
+	const r = Math.round(Math.random() * 350) + 100;
+	let i = 0;
+	let str = '';
+	while(i < r){
+		i++;
+		str += s[Math.round(Math.random() * s.length)];
+	}
+	return str;
+};
+
 describe('ReputationService', () => {
 
     let reputation, reputable, fragTypes;
+	const EOS_MAINNET = 'eos::aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';
 
 	it('should setup ridl', done => {
 		new Promise(async() => {
@@ -33,8 +46,8 @@ describe('ReputationService', () => {
 	it('should create chained reputables', done => {
 		new Promise(async() => {
 			const fragments = [fragTypes[0].toFragment(1)];
-			await ridl.reputation.repute(username, 0, 'eosio.system', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, network.id());
-			const parent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.system', network.id());
+			await ridl.reputation.repute(username, 0, 'eosio.system', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, EOS_MAINNET);
+			const parent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.system', EOS_MAINNET);
 			assert(parent, "Did not create eosio.system reputable.");
 
 			// parent to id reputable
@@ -56,7 +69,7 @@ describe('ReputationService', () => {
 			assert(test1.parent && test1.parent.id === parent.id, "regprod reputable did not have a parent.");
 
 			// auto parent creation
-			await ridl.reputation.repute(username, 0, 'transfer', FRAG_TYPES.ACTION, fragments, '', 'eosio.token::acc');
+			await ridl.reputation.repute(username, 0, 'transfer', FRAG_TYPES.ACTION, badfrags, '', 'eosio.token::acc');
 			const testParent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.token', '', 0);
 			assert(testParent, "Did not create eosio.token parent reputable.");
 			const testChild = await ridl.reputation.searchByFingerprint(FRAG_TYPES.ACTION, 'transfer', '', testParent.id);
@@ -105,7 +118,7 @@ describe('ReputationService', () => {
 
 	it('should be able to search for an entity by fingerprint', done => {
 		new Promise(async() => {
-			const found = await ridl.reputation.searchByFingerprint('acc', 'eosio.system', network.id());
+			const found = await ridl.reputation.searchByFingerprint('acc', 'eosio.system', EOS_MAINNET);
 			assert(found, "Could not find reputable by fingerprint");
 			done();
 		})
@@ -157,13 +170,33 @@ describe('ReputationService', () => {
 		new Promise(async() => {
 			await userAuth(account);
 			const fragments = [fragTypes[0].toFragment(1)];
-			await ridl.reputation.repute(username, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, network.id());
+			const badFrags = [fragTypes.find(x => x.type === 'dangerous').toFragment(-1)];
+
+			await ridl.reputation.repute(username, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, EOS_MAINNET);
+			const tokenParent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'eosio.token', EOS_MAINNET);
+			await ridl.reputation.repute(username, 0, 'transfer', FRAG_TYPES.ACTION, badFrags, '', tokenParent.id, randomMemo());
+			await ridl.reputation.repute(username, 0, 'transfer', FRAG_TYPES.ACTION, [fragTypes.find(x => x.type === 'scam').toFragment(-1)], '', tokenParent.id, randomMemo());
+			await ridl.reputation.repute(username, 0, 'transfer', FRAG_TYPES.ACTION, [fragTypes.find(x => x.type === 'scam').toFragment(0.5)], '', tokenParent.id, randomMemo());
+
+
 			await ridl.reputation.repute(username, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments);
-			await ridl.reputation.repute(username, 0, 'scatterfunds', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments);
+
+
+			await ridl.reputation.repute(username, 0, 'scatterfunds', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments, EOS_MAINNET);
+			const parent = await ridl.reputation.searchByFingerprint(FRAG_TYPES.BLOCKCHAIN_ADDR, 'scatterfunds', EOS_MAINNET);
+			assert(parent, "Did not create scatterfunds reputable.");
+			await ridl.reputation.repute(username, 0, 'claim', FRAG_TYPES.ACTION, badFrags, '', parent);
+			await ridl.reputation.repute(username, 0, 'test', FRAG_TYPES.ACTION, badFrags, '', parent);
+
+			// const children = await ridl.reputation.searchByParent(parent.id);
+			// assert(children.length === 2, "Children not found");
+
+
 			await ridl.reputation.repute(username, 0, 'get-scatter.com', FRAG_TYPES.APPLICATION, fragments);
 			await ridl.reputation.repute(username, 0, 'gets-scatter.com', FRAG_TYPES.APPLICATION, [fragTypes.find(x => x.type === 'scam').toFragment(-1)]);
 			await ridl.reputation.repute(username, 0, 'telosfoundation.io', FRAG_TYPES.APPLICATION, fragments);
 			await ridl.reputation.repute(username, 0, 'telos-foundation.io', FRAG_TYPES.APPLICATION, [fragTypes.find(x => x.type === 'scam').toFragment(-1)]);
+			await ridl.reputation.repute(username, 0, 'ridl.get-scatter.com', FRAG_TYPES.APPLICATION, [fragTypes.find(x => x.type === 'scam').toFragment(-1)]);
 
 			await userAuth(account2);
 			await ridl.reputation.repute(username2, 0, 'eosio.token', FRAG_TYPES.BLOCKCHAIN_ADDR, fragments);
@@ -173,5 +206,14 @@ describe('ReputationService', () => {
 			done();
 		})
 	});
+
+	it('should', done => {
+		new Promise(async() => {
+			await userAuth(account);
+			const children = await ridl.reputation.searchByParent(1);
+			console.log(children);
+			done();
+		})
+	})
 
 });

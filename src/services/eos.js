@@ -2,6 +2,9 @@ import Eos from 'eosjs';
 import Network from '../models/Network';
 import {BigNumber} from 'bignumber.js';
 
+const {format} = Eos.modules;
+export const encodeName = name => format.encodeName(name, false);
+
 export const ridlCode = 'ridlridlridl';
 export const tokenCode = 'ridlridlcoin';
 
