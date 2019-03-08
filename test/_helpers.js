@@ -2,21 +2,21 @@ import Network from "../src/models/Network";
 import ridl from "../src/ridl";
 import * as eos from "../src/services/eos";
 
+export const network = Network.fromJson({
+	host:'192.168.1.11',
+	port:8888,
+	protocol:'http',
+	chainId:'6cbecff836a9fa60da53bf97a0a180103b2e76041d4414693d11bf39e2341547',
+	blockchain:'eos',
+});
+
 // export const network = Network.fromJson({
-// 	host:'192.168.1.8',
-// 	port:8888,
+// 	host:'ridlnet.get-scatter.com',
+// 	port:80,
 // 	protocol:'http',
 // 	chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f',
 // 	blockchain:'eos',
 // });
-
-export const network = Network.fromJson({
-	host:'ridlnet.get-scatter.com',
-	port:80,
-	protocol:'http',
-	chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f',
-	blockchain:'eos',
-});
 
 const contractKey = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
 export const privateKey = '5KNNCwxjTeCvhz5tZdcphA1RCEvSduCDkmQSVKkZTQunSD9Jfxw';
@@ -34,9 +34,9 @@ export const userAuth =     (acc) => ridl.init(network, acc ? acc : account, use
 
 const auth = {authorization:[`ridlridlridl@active`]};
 
-export const forcetype = async (type, parent=0) => {
+export const forcetype = async (type, parent=0, upTag = "", downTag = "") => {
 	await contractAuth();
-	await eos.contract.forcetype(type, parent, "", "", auth);
+	await eos.contract.forcetype(type, parent, upTag, downTag, auth);
 	return true;
 }
 
@@ -44,8 +44,18 @@ export const basicSetup = async () => {
 	await contractAuth();
 	await eos.contract.clean('eosio', auth);
 
-	const BASE_FRAGS = ['security', 'privacy', 'scam', 'solvency', 'social', 'dangerous'];
-	await Promise.all(BASE_FRAGS.map(type => forcetype(type)));
+	await forcetype("security", 0, "Secure", "Insecure");
+	await forcetype("privacy", 0, "Discreet", "Indiscreet");
+	await forcetype("scam", 0, "Trusted", "Scam");
+	await forcetype("solvency", 0, "Solvent", "Insolvent");
+	await forcetype("social", 0, "", "");
+	await forcetype("dangerous", 0, "Safe", "Dangerous");
+	await forcetype("accuracy", 0, "Accurate", "Inaccurate");
+	await forcetype("rarity", 0, "Rare", "Common");
+	await forcetype("fees", 0, "Low/No Fees", "High Fees");
+	await forcetype("user experience", 0, "", "");
+	await forcetype("code standards", 0, "Open Source", "Closed Source");
+
 	return true;
 }
 

@@ -68,8 +68,18 @@ const getReputation = async reputable => {
 }
 
 const getParents = async (reputable, last = null) => {
-	if(reputable.base === 0) return true;
-	if(last && last.base === 0) return true;
+	if(reputable.base === 0 || (last && last.base === 0)) {
+		let parents = [];
+		const getParents = (r = null) => {
+			if(!r) r = reputable;
+			if(!r.parent) return;
+			parents.unshift(r.parent);
+			return getParents(r.parent);
+		}
+		getParents();
+		await getReputations(parents);
+		return true;
+	}
 
 	const parent = await eos.read({
 		table:'reputables',
@@ -213,4 +223,14 @@ export default class ReputationService {
         }) : [];
         return globalFragments.concat(basedFragments);
     }
+
+	async getMiners(id){
+
+		return eos.read({
+			table:'minerfrags',
+			scope:id,
+			limit:500,
+			rowsOnly:true,
+		}).catch(() => null);
+	}
 }

@@ -29,7 +29,7 @@ const randomMemo = () => {
 
 describe('ReputationService', () => {
 
-    let reputation, reputable, fragTypes;
+    let reputation, reputable, fragTypes, identity;
 	const EOS_MAINNET = 'eos::aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';
 
 	it('should setup ridl', done => {
@@ -39,6 +39,14 @@ describe('ReputationService', () => {
 			await userAuth(account);
 			fragTypes = await ridl.reputation.getFragmentsFor();
 			assert(fragTypes.length, "Could not get frag types, are you sure you initialized the contract properly?");
+			done();
+		})
+	});
+
+	it('should get the identities', done => {
+		new Promise(async() => {
+			identity = await ridl.identity.get(username);
+			assert(identity, "could not get the identity");
 			done();
 		})
 	});
@@ -144,7 +152,10 @@ describe('ReputationService', () => {
 
             await ridl.reputation.repute(username, 0, 'domain.com', FRAG_TYPES.APPLICATION, fragments);
 	        const r = await ridl.reputation.searchByFingerprint(FRAG_TYPES.APPLICATION, 'domain.com');
-	        assert(r.miner === account.name, "Account was not made miner");
+	        assert(r, "Could not get reputable (mine owner)");
+
+	        const miners = await ridl.reputation.getMiners(r.id);
+	        assert(miners.every(x => x.identity === identity.id), "Did not set the proper miners");
 
             done();
         })
@@ -206,14 +217,5 @@ describe('ReputationService', () => {
 			done();
 		})
 	});
-
-	it('should', done => {
-		new Promise(async() => {
-			await userAuth(account);
-			const children = await ridl.reputation.searchByParent(1);
-			console.log(children);
-			done();
-		})
-	})
 
 });
