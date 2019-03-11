@@ -2,21 +2,21 @@ import Network from "../src/models/Network";
 import ridl from "../src/ridl";
 import * as eos from "../src/services/eos";
 
+// export const network = Network.fromJson({
+// 	host:'192.168.1.11',
+// 	port:8888,
+// 	protocol:'http',
+// 	chainId:'6cbecff836a9fa60da53bf97a0a180103b2e76041d4414693d11bf39e2341547',
+// 	blockchain:'eos',
+// });
+
 export const network = Network.fromJson({
-	host:'192.168.1.11',
-	port:8888,
+	host:'ridlnet.get-scatter.com',
+	port:80,
 	protocol:'http',
 	chainId:'6cbecff836a9fa60da53bf97a0a180103b2e76041d4414693d11bf39e2341547',
 	blockchain:'eos',
 });
-
-// export const network = Network.fromJson({
-// 	host:'ridlnet.get-scatter.com',
-// 	port:80,
-// 	protocol:'http',
-// 	chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f',
-// 	blockchain:'eos',
-// });
 
 const contractKey = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
 export const privateKey = '5KNNCwxjTeCvhz5tZdcphA1RCEvSduCDkmQSVKkZTQunSD9Jfxw';

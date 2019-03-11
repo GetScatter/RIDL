@@ -4,6 +4,7 @@ import {RepType} from "../models/Reputable";
 import {tokenCode} from "./eos";
 import {ridlCode} from "./eos";
 import {fingerprinted} from "../util/helpers";
+import {encodeName} from "./eos";
 
 const getIdentity = async (username) => {
     return await eos.read({
@@ -134,11 +135,23 @@ export default class IdentityService {
 	    return await eos.read({
 		    token:true,
 		    table:'accounts',
-		    scope:name,
+		    scope:encodeName(name),
 		    limit:1,
 		    firstOnly:true,
-	    }).then(x => asFloat ? parseFloat(x.balance.split(' ')[0]) : x.balance);
+	    }).then(x => {
+	    	const quantity = x ? x.balance : '0.0000 RIDL';
+	    	return asFloat ? parseFloat(quantity.split(' ')[0]) : quantity
+	    });
     }
 
     async exists(name){ return await this.get(name).then(x => !!x); }
+
+    async getTopup(username){
+	    return await eos.read({
+		    table:'topups',
+		    index:fingerprinted(username),
+		    limit:1,
+		    firstOnly:true,
+	    });
+    }
 }

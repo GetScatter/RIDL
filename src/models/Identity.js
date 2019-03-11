@@ -20,7 +20,7 @@ export default class Identity {
 
 	tokenCapacity(){
         const parse = x => parseFloat(x.split(' ')[0]);
-        return `${parseFloat(parse(this.expansion)+parse(this.bonded)+parse(this.usable_rep)).toFixed(4)} RIDL`;
+        return `${parseFloat(100+(parseFloat(parse(this.expansion)+parse(this.bonded)+parse(this.usable_rep)))).toFixed(4)} RIDL`;
     }
 
 }
