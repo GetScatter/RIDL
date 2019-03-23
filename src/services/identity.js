@@ -123,8 +123,7 @@ export default class IdentityService {
 	 */
 	async claim(username, key, signature){
 		return eos.contract.claim(eos.account.name, username, key, signature, eos.options)
-			.then(() => this.get(username))
-			.catch(err => console.error(err));
+			.then(() => this.get(username));
 	}
 
     async identityBalance(username){
