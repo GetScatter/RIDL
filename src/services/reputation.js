@@ -106,7 +106,7 @@ export default class ReputationService {
 			? `fingerprint::${parent.entity}::${parent.type}::${parent.network}`
 			: `id::${parent.id}`;
 		else if(typeof parent === 'number') parent = `id::${parent}`;
-		else if(typeof parent === 'string' && parent.toString().length > 0 && parent.indexOf('::') > -1)parent = `fingerprint::${parent}`;
+		else if(typeof parent === 'string' && parent.toString().length > 0 && parent.indexOf('::') > -1) parent = `fingerprint::${parent}`;
 
 
         if(!fragments.every(frag => frag instanceof Fragment && frag.validate())) throw new Error('Invalid fragments');

@@ -4,14 +4,12 @@ export default class Reputable {
 		this.type = '';
 		this.entity = '';
 		this.base = '';
-
-		this.miner = '';
-		this.miner_til = -1;
-		this.miner_frags = [];
+		this.fingerprint = '';
 		this.last_reputer = '';
 		this.last_repute_time = +new Date();
 		this.owner = '';
 		this.network = '';
+		this.block = 0;
 
 		this.reputation = null;
 		this.parent = null;
